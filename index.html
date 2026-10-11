@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="it" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Orologio Vintage Flip - Macerata</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #d1d5db;
+            background-image: radial-gradient(circle at center, #e5e7eb 0%, #9ca3af 100%);
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Realistic shadow and border for the outer white casing */
+        .vintage-casing {
+            background-color: #f3f4f6;
+            background-image: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.35),
+                inset 0 2px 4px rgba(255, 255, 255, 0.8),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+            border: 4px solid #e5e7eb;
+        }
+
+        /* Glass transparent cover overlay effect */
+        .glass-cover {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 100%);
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+        }
+
+        /* Flip Card Base Styles */
+        .flip-card {
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+
+        .flap {
+            position: relative;
+            background-color: #121214;
+            border-radius: 1rem;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            border: 2px solid #000;
+        }
+
+        /* Center split line mimicking physical split flap */
+        .flap::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 2px;
+            background-color: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 1px 1px rgba(255, 255, 255, 0.08);
+            z-index: 20;
+        }
+
+        /* Subtle left and right hinge pins */
+        .hinge-left, .hinge-right {
+            position: absolute;
+            top: 50%;
+            width: 8px;
+            height: 14px;
+            background: linear-gradient(90deg, #1f2937, #111827);
+            transform: translateY(-50%);
+            z-index: 30;
+            border-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+        .hinge-left { left: 4px; }
+        .hinge-right { right: 4px; }
+
+        /* Animation class for flipping */
+        @keyframes flipDown {
+            0% { transform: rotateX(0deg); }
+            100% { transform: rotateX(-180deg); }
+        }
+
+        .flipping {
+            animation: flipDown 0.4s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col items-center justify-center overflow-hidden p-4 sm:p-6">
+
+    <div id="app" class="w-full max-w-lg sm:max-w-xl md:max-w-md flex flex-col items-center">
+        
+        <!-- Header bar with 'MACERATA' and settings gear icon -->
+        <div class="w-full flex justify-between items-center mb-3 px-2 text-gray-700 opacity-90">
+            <div class="flex items-center space-x-2">
+                <span class="text-sm font-bold tracking-widest uppercase text-gray-800">MACERATA</span>
+            </div>
+            <button onclick="openSettingsModal()" class="p-2 bg-white/80 hover:bg-white rounded-full shadow border border-gray-300 transition text-gray-700 focus:outline-none" title="Impostazioni">
+                <!-- Gear SVG Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Main Vintage Casing (Reference style: 3 stacked panels in white frame) -->
+        <div class="vintage-casing w-full rounded-3xl p-3 sm:p-4 flex flex-col gap-3 relative shadow-2xl">
+            
+            <!-- Glass cover sheen -->
+            <div class="absolute inset-0 rounded-3xl glass-cover z-40"></div>
+
+            <!-- SECTION 1: Date & Month (Top Module) -->
+            <div class="flap w-full h-32 sm:h-36 md:h-40 flex items-center justify-between px-6 sm:px-8 relative">
+                <div class="hinge-left"></div>
+                <div class="hinge-right"></div>
+                
+                <!-- Day Number -->
+                <div class="flex items-baseline">
+                    <span id="dayNum" class="text-white text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter">29</span>
+                </div>
+
+                <!-- Month Abbreviation -->
+                <div class="flex items-baseline">
+                    <span id="monthName" class="text-white text-4xl sm:text-5xl md:text-6xl font-medium tracking-tight">Mar</span>
+                </div>
+            </div>
+
+            <!-- SECTION 2: Day of the Week (Middle Module) -->
+            <div class="flap w-full h-32 sm:h-36 md:h-40 flex items-center justify-center px-6 relative">
+                <div class="hinge-left"></div>
+                <div class="hinge-right"></div>
+                
+                <span id="dayWeek" class="text-white text-4xl sm:text-5xl md:text-6xl font-medium tracking-wide text-center">Sabato</span>
+            </div>
+
+            <!-- SECTION 3: Time - Hours & Minutes (Bottom Module) -->
+            <div class="flap w-full h-32 sm:h-36 md:h-40 flex items-center justify-center px-4 relative">
+                <div class="hinge-left"></div>
+                <div class="hinge-right"></div>
+                
+                <div class="flex items-center justify-center space-x-2 sm:space-x-4 tracking-tight">
+                    <span id="hoursVal" class="text-white text-6xl sm:text-7xl md:text-8xl font-bold">12</span>
+                    <!-- Subtle mechanical separator dot -->
+                    <span class="text-gray-500 text-5xl sm:text-6xl font-light pb-2 animate-pulse">:</span>
+                    <span id="minsVal" class="text-white text-6xl sm:text-7xl md:text-8xl font-bold">58</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col space-y-4 border border-gray-100">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold text-gray-800">Impostazioni Orologio</h3>
+                <button onclick="closeSettingsModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="flex flex-col space-y-3 py-2">
+                <!-- Wake Lock Status & Toggle -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-semibold text-gray-800">Blocco Schermo</span>
+                        <span id="wakeLockText" class="text-xs text-gray-500">Inattivo</span>
+                    </div>
+                    <button id="wakeLockBadge" onclick="requestWakeLock()" class="text-xs bg-amber-100 text-amber-800 px-3 py-1.5 rounded-lg font-semibold shadow-sm border border-amber-300 transition">
+                        Attiva
+                    </button>
+                </div>
+
+                <!-- Sound Toggle -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-semibold text-gray-800">Audio Meccanico</span>
+                        <span class="text-xs text-gray-500">Riproduci suono clack</span>
+                    </div>
+                    <button id="soundToggleBtn" onclick="toggleSound()" class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg font-semibold shadow-sm border border-emerald-300 transition">
+                        <span id="soundLabel">Attivo</span>
+                    </button>
+                </div>
+
+                <!-- Fullscreen Toggle -->
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-semibold text-gray-800">Schermo Intero</span>
+                        <span class="text-xs text-gray-500">Espandi a tutto schermo</span>
+                    </div>
+                    <button onclick="toggleFullscreen()" class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1.5 rounded-lg font-semibold shadow-sm transition">
+                        Espandi
+                    </button>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="closeSettingsModal()" class="w-full py-2.5 bg-gray-900 hover:bg-black text-white rounded-xl font-medium text-sm shadow transition">
+                    Chiudi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let lastDay = '';
+        let lastMonth = '';
+        let lastWeekDay = '';
+        let lastHours = '';
+        let lastMins = '';
+        let soundEnabled = true;
+        let audioCtx = null;
+        let wakeLock = null;
+
+        function openSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        // Screen Wake Lock API management
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    const badge = document.getElementById('wakeLockBadge');
+                    const text = document.getElementById('wakeLockText');
+                    badge.className = "text-xs bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg font-semibold shadow-sm border border-emerald-300 transition";
+                    badge.textContent = "Attivo";
+                    text.textContent = "Schermo sempre acceso";
+                } catch (err) {
+                    console.log(`Wake Lock error: ${err.name}, ${err.message}`);
+                }
+            } else {
+                document.getElementById('wakeLockText').textContent = "Non supportato";
+            }
+        }
+
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                await requestWakeLock();
+            }
+        });
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playFlipSound() {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                const bufferSize = audioCtx.sampleRate * 0.05;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 1200;
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                noise.start();
+            } catch (e) {
+                console.log('Audio context error:', e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggleBtn');
+            const label = document.getElementById('soundLabel');
+            if (soundEnabled) {
+                btn.className = "text-xs bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-lg font-semibold shadow-sm border border-emerald-300 transition";
+                label.textContent = 'Attivo';
+                playFlipSound();
+            } else {
+                btn.className = "text-xs bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg font-semibold shadow-sm border border-gray-300 transition";
+                label.textContent = 'Disattivo';
+            }
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('Fullscreen error:', err);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        const daysOfWeek = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+        const monthsOfYear = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+
+        function updateClock() {
+            const now = new Date();
+            
+            const day = String(now.getDate());
+            const month = monthsOfYear[now.getMonth()];
+            const weekDay = daysOfWeek[now.getDay()];
+            const hours = String(now.getHours()).padStart(2, '0');
+            const mins = String(now.getMinutes()).padStart(2, '0');
+
+            if (day !== lastDay) {
+                const el = document.getElementById('dayNum');
+                el.classList.add('flipping');
+                setTimeout(() => {
+                    el.textContent = day;
+                    el.classList.remove('flipping');
+                }, 200);
+                playFlipSound();
+                lastDay = day;
+            }
+
+            if (month !== lastMonth) {
+                const el = document.getElementById('monthName');
+                el.classList.add('flipping');
+                setTimeout(() => {
+                    el.textContent = month;
+                    el.classList.remove('flipping');
+                }, 200);
+                lastMonth = month;
+            }
+
+            if (weekDay !== lastWeekDay) {
+                const el = document.getElementById('dayWeek');
+                el.classList.add('flipping');
+                setTimeout(() => {
+                    el.textContent = weekDay;
+                    el.classList.remove('flipping');
+                }, 200);
+                lastWeekDay = weekDay;
+            }
+
+            if (hours !== lastHours) {
+                const el = document.getElementById('hoursVal');
+                el.classList.add('flipping');
+                setTimeout(() => {
+                    el.textContent = hours;
+                    el.classList.remove('flipping');
+                }, 200);
+                playFlipSound();
+                lastHours = hours;
+            }
+
+            if (mins !== lastMins) {
+                const el = document.getElementById('minsVal');
+                el.classList.add('flipping');
+                setTimeout(() => {
+                    el.textContent = mins;
+                    el.classList.remove('flipping');
+                }, 200);
+                playFlipSound();
+                lastMins = mins;
+            }
+        }
+
+        window.onload = function() {
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // Initial user interaction unlock audio context
+            document.body.addEventListener('click', () => {
+                initAudio();
+            }, { once: true });
+        };
+    </script>
+</body>
+</html>
